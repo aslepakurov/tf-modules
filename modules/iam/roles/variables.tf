@@ -22,7 +22,7 @@ variable "iam_role_max_session" {
 variable "policy_files" {
   type        = map(string)
   default     = {}
-  description = "IAM policy files paths"
+  description = "IAM policy file paths"
 }
 
 variable "tags" {

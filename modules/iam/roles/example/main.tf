@@ -18,7 +18,7 @@ terraform {
 }
 
 module "iam-roles" {
-  source = ".."
+  source = "./.."
 
   assume_role_principal = "ec2.amazonaws.com"
   iam_role_name = "testRoleForTF"
