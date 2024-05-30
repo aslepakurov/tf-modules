@@ -1,0 +1,35 @@
+name: Terraform Validate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init for IAM Users
+        working-directory: ./modules/users
+        run: terraform init
+
+      - name: Terraform Validate for IAM Users
+        working-directory: ./modules/users
+        run: terraform validate
+
+      - name: Terraform Init for IAM Roles
+        working-directory: ./modules/roles
+        run: terraform init
+
+      - name: Terraform Validate for IAM Roles
+        working-directory: ./modules/roles
+        run: terraform validate
