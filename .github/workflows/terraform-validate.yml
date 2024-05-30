@@ -17,17 +17,17 @@ jobs:
           terraform_version: 1.5.7
 
       - name: Terraform Init for IAM Users
-        working-directory: ./modules/users
+        working-directory: ./modules/iam/users
         run: terraform init
 
       - name: Terraform Validate for IAM Users
-        working-directory: ./modules/users
+        working-directory: ./modules/iam/users
         run: terraform validate
 
       - name: Terraform Init for IAM Roles
-        working-directory: ./modules/roles
+        working-directory: ./modules/iam/roles
         run: terraform init
 
       - name: Terraform Validate for IAM Roles
-        working-directory: ./modules/roles
+        working-directory: ./modules/iam/roles
         run: terraform validate
