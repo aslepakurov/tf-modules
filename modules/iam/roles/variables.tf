@@ -32,6 +32,6 @@ variable "tags" {
 }
 
 variable "assume_role_principal" {
-  type        = string
+  type        = map(string)
   description = "IAM Principal for role assume"
 }

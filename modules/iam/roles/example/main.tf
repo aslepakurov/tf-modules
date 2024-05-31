@@ -20,7 +20,9 @@ terraform {
 module "iam-roles" {
   source = "./.."
 
-  assume_role_principal = "ec2.amazonaws.com"
+  assume_role_principal = {
+    Service = "ec2.amazonaws.com"
+  }
   iam_role_name = "testRoleForTF"
   policy_files = {
     test_policy = "test_policy.json"
