@@ -2,17 +2,7 @@ resource "aws_iam_role" "iam_role" {
   name        = var.iam_role_name
   description = var.iam_role_description
 
-  assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
-    Statement = [
-      {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
-        Sid       = ""
-        Principal = var.assume_role_principal
-      },
-    ]
-  })
+  assume_role_policy = file(var.assume_file)
 
   max_session_duration = var.iam_role_max_session
   tags                 = var.tags
