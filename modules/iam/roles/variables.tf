@@ -31,7 +31,8 @@ variable "tags" {
   description = "AWS tags"
 }
 
-variable "assume_role_principal" {
-  type        = map(string)
-  description = "IAM Principal for role assume"
+variable "assume_file" {
+  type        = string
+  default     = ""
+  description = "IAM role assume file path"
 }

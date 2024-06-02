@@ -15,7 +15,7 @@ To use a module, include it in your Terraform configuration like this:
 
 ```hcl
 module "iam_users" {
-  source = "git::https://github.com/aslepakurov/tf-modules.git?ref-0.0.1//modules/users"
+  source = "git::https://github.com/aslepakurov/tf-modules.git//modules/users"
 
   iam_user_name = "example-user"
 
@@ -35,11 +35,11 @@ module "iam_users" {
 
 ```hcl
 module "iam_roles" {
-  source = "git::https://github.com/aslepakurov/tf-modules.git?ref-0.0.1//modules/roles"
+  source = "git::https://github.com/aslepakurov/tf-modules.git//modules/roles"
   
   iam_role_name         = "example-role"
   iam_role_description  = "An example IAM role"
-  assume_role_principal = "ec2.amazonaws.com"
+  assume_file           = "path/to/assume1.json"
   iam_role_max_session  = 3600
 
   policy_files = {
