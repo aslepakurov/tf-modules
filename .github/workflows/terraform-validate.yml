@@ -31,3 +31,11 @@ jobs:
       - name: Terraform Validate for IAM Roles
         working-directory: ./modules/iam/roles
         run: terraform validate
+
+      - name: Terraform Init for Network
+        working-directory: ./modules/network
+        run: terraform init
+
+      - name: Terraform Validate for Network
+        working-directory: ./modules/network
+        run: terraform validate
