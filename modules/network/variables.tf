@@ -15,3 +15,9 @@ variable "vpc_cidr" {
   description = "CIDR for the VPC"
   default     = "172.17.0.0/16"
 }
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "AWS tags"
+}
