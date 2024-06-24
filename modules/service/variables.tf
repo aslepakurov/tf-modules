@@ -35,13 +35,13 @@ variable "access_iam_arn" {
 }
 
 variable "env" {
-  type = map(string)
+  type        = map(string)
   description = "Map of environment variables"
-  default = {}
+  default     = {}
 }
 
 variable "tags" {
   type        = map(string)
-  default     = {}
   description = "AWS tags"
+  default     = {}
 }
