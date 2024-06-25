@@ -45,3 +45,21 @@ variable "tags" {
   description = "AWS tags"
   default     = {}
 }
+
+variable "max_concurrency" {
+  type        = number
+  description = "Max concurrency for auto scaling policy"
+  default     = 1000
+}
+
+variable "min_workers" {
+  type        = number
+  description = "Minimum amount of workers"
+  default     = 1
+}
+
+variable "max_workers" {
+  type        = number
+  description = "Maximum amount of workers"
+  default     = 3
+}
