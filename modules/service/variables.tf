@@ -49,7 +49,7 @@ variable "tags" {
 variable "max_concurrency" {
   type        = number
   description = "Max concurrency for auto scaling policy"
-  default     = 1000
+  default     = 200
 }
 
 variable "min_workers" {
