@@ -40,12 +40,6 @@ variable "env" {
   default     = {}
 }
 
-variable "tags" {
-  type        = map(string)
-  description = "AWS tags"
-  default     = {}
-}
-
 variable "max_concurrency" {
   type        = number
   description = "Max concurrency for auto scaling policy"
@@ -62,4 +56,10 @@ variable "max_workers" {
   type        = number
   description = "Maximum amount of workers"
   default     = 3
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "AWS tags"
+  default     = {}
 }
