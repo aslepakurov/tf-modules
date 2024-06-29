@@ -5,19 +5,13 @@ resource "aws_s3_bucket" "s3_bucket_static" {
   tags = var.tags
 }
 
-resource "aws_s3_bucket_acl" "admin_site_acl" {
-  bucket = aws_s3_bucket.s3_bucket_static.id
-
-  acl = "private"
-}
-
 resource "aws_s3_bucket_public_access_block" "example" {
   bucket = aws_s3_bucket.s3_bucket_static.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 resource "aws_s3_bucket_website_configuration" "this" {
