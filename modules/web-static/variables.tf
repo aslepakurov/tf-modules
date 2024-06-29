@@ -11,6 +11,11 @@ variable "default_page" {
   default = "index.html"
 }
 
+variable "error_page" {
+  type    = string
+  default = "error.html"
+}
+
 variable "tags" {
   type        = map(string)
   description = "AWS tags"
