@@ -5,6 +5,14 @@ resource "aws_s3_bucket" "s3_bucket_static" {
   tags = var.tags
 }
 
+resource "aws_s3_bucket_ownership_controls" "example" {
+  bucket = aws_s3_bucket.s3_bucket_static.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
 resource "aws_s3_bucket_acl" "admin_site_acl" {
   bucket = aws_s3_bucket.s3_bucket_static.id
 
