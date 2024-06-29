@@ -38,11 +38,13 @@ resource "aws_cloudfront_distribution" "static_cloudfront" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+
   }
 
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "blacklist"
+      locations = ["RU", "BY", "KP", "IR", "CN"]
     }
   }
 
