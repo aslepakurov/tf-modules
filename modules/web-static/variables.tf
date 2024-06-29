@@ -21,3 +21,8 @@ variable "tags" {
   description = "AWS tags"
   default     = {}
 }
+
+variable "aliases" {
+  type = list(string)
+  default = []
+}

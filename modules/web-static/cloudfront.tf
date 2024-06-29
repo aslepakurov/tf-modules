@@ -7,6 +7,8 @@ resource "aws_cloudfront_distribution" "static_cloudfront" {
 
   enabled = true
 
+  aliases = var.aliases
+
   origin {
     origin_id   = local.s3_origin_id
     domain_name = local.s3_domain_name
