@@ -53,12 +53,12 @@ resource "aws_s3_bucket_policy" "this" {
     Statement = [
       {
         "Sid"       = "PublicReadGetObject",
-        "Effect"    = "Deny",
+        "Effect"    = "Allow",
         "Principal" = "*",
         "Action"    = "s3:GetObject",
         "Resource"  = "${aws_s3_bucket.s3_bucket_static.arn}/**",
         "Condition" = {
-          "NotIpAddress" = {
+          "IpAddress" = {
             "aws:SourceIp" = [
               "173.245.48.0/20",
               "103.21.244.0/22",
