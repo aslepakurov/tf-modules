@@ -22,12 +22,12 @@ variable "tags" {
   default     = {}
 }
 
-variable "aliases" {
-  type = list(string)
-  default = []
-}
+#variable "aliases" {
+#  type = list(string)
+#  default = []
+#}
 
-variable "certificate_arn" {
-  type = string
-  default = ""
-}
+#variable "certificate_arn" {
+#  type = string
+#  default = ""
+#}
