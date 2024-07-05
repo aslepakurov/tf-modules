@@ -6,6 +6,9 @@ This repository contains a collection of reusable Terraform modules.
 
 - [Users modules](modules/iam/users)
 - [Roles modules](modules/iam/roles)
+- [Network](modules/network)
+- [Backend](modules/service)
+- [Web](modules/web-static)
 
 ## Usage
 
