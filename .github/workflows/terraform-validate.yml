@@ -39,3 +39,11 @@ jobs:
       - name: Terraform Validate for Network
         working-directory: ./modules/network
         run: terraform validate
+
+      - name: Terraform Init for Cognito
+        working-directory: ./modules/auth
+        run: terraform init
+
+      - name: Terraform Validate for Cognito
+        working-directory: ./modules/auth
+        run: terraform validate
