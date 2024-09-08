@@ -104,10 +104,10 @@ resource "aws_cognito_user_pool_client" "api_client" {
 #  }
 #}
 
-resource "aws_cognito_user_pool_domain" "custom_domain" {
-  user_pool_id = aws_cognito_user_pool.user_pool.id
-  domain       = var.custom_domain
-}
+#resource "aws_cognito_user_pool_domain" "custom_domain" {
+#  user_pool_id = aws_cognito_user_pool.user_pool.id
+#  domain       = var.custom_domain
+#}
 
 output "cognito_ui_client" {
   value = aws_cognito_user_pool_client.ui_client.id
