@@ -46,6 +46,7 @@ resource "aws_cognito_user_pool" "user_pool" {
 
 }
 
+//todo: do dynamic
 resource "aws_cognito_user_pool_client" "ui_client" {
   name = "${var.project_name}-ui"
 
@@ -73,11 +74,11 @@ resource "aws_cognito_user_pool_client" "ui_client" {
   logout_urls   = split(",", var.allowed_hosts)
 }
 
-resource "aws_cognito_user_pool_client" "api_client" {
-  name = "${var.project_name}-api"
+resource "aws_cognito_user_pool_client" "test_api_client" {
+  name = "${var.project_name}-test"
 
   user_pool_id                  = aws_cognito_user_pool.user_pool.id
-  generate_secret               = true
+  generate_secret               = false
   refresh_token_validity        = 90
   prevent_user_existence_errors = "ENABLED"
   //todo: limit scope for auth
@@ -88,22 +89,29 @@ resource "aws_cognito_user_pool_client" "api_client" {
 
 }
 
-#resource "aws_cognito_identity_provider" "google_provider" {
-#  user_pool_id  = aws_cognito_user_pool.user_pool.id
-#  provider_name = "Google"
-#  provider_type = "Google"
-#
-#  provider_details = {
-#    authorize_scopes = "email"
-#    client_id        = var.cognito_google_client_id
-#    client_secret    = data.aws_ssm_parameter.cognito_google_secret.value
-#  }
-#
-#  attribute_mapping = {
-#    email = "email"
-#  }
-#}
+resource "aws_cognito_user_pool_client" "api_client" {
+  name = "${var.project_name}-api"
 
+  user_pool_id                  = aws_cognito_user_pool.user_pool.id
+  generate_secret               = true
+  prevent_user_existence_errors = "ENABLED"
+
+  access_token_validity  = 5
+  refresh_token_validity = 60
+  id_token_validity      = 5
+
+  token_validity_units {
+    access_token  = "minutes"
+    id_token      = "minutes"
+    refresh_token = "minutes"
+  }
+  //todo: limit scope for auth
+  explicit_auth_flows           = [
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_PASSWORD_AUTH",
+  ]
+
+}
 #resource "aws_cognito_user_pool_domain" "custom_domain" {
 #  user_pool_id = aws_cognito_user_pool.user_pool.id
 #  domain       = var.custom_domain
