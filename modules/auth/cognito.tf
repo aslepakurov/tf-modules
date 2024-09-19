@@ -74,7 +74,7 @@ resource "aws_cognito_user_pool_client" "ui_client" {
   logout_urls   = split(",", var.allowed_hosts)
 }
 
-resource "aws_cognito_user_pool_client" "test_api_client" {
+resource "aws_cognito_user_pool_client" "api_client" {
   name = "${var.project_name}-test"
 
   user_pool_id                  = aws_cognito_user_pool.user_pool.id
@@ -89,7 +89,7 @@ resource "aws_cognito_user_pool_client" "test_api_client" {
 
 }
 
-resource "aws_cognito_user_pool_client" "api_client" {
+resource "aws_cognito_user_pool_client" "test_api_client" {
   name = "${var.project_name}-api"
 
   user_pool_id                  = aws_cognito_user_pool.user_pool.id
