@@ -21,6 +21,7 @@ resource "aws_apprunner_service" "service" {
       image_configuration {
         port                          = var.service_port
         runtime_environment_variables = var.env
+        runtime_environment_secrets   = var.secret_env
       }
     }
   }

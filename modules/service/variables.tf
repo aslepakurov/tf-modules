@@ -40,6 +40,12 @@ variable "env" {
   default     = {}
 }
 
+variable "secret_env" {
+  type        = map(string)
+  description = "Map of environment variables from Secret Manager"
+  default     = {}
+}
+
 variable "max_concurrency" {
   type        = number
   description = "Max concurrency for auto scaling policy"
