@@ -70,5 +70,3 @@ variable "auto_verified_attributes" {
   type    = list(string)
   default = ["email"]
 }
-
-varia
