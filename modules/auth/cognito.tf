@@ -1,5 +1,9 @@
+locals {
+  user_pool = "${var.project_name}-user-pool"
+}
+
 resource "aws_cognito_user_pool" "user_pool" {
-  name                     = "${var.project_name}-user-pool"
+  name                     = local.user_pool
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
 
@@ -46,82 +50,73 @@ resource "aws_cognito_user_pool" "user_pool" {
 
 }
 
-//todo: do dynamic
-resource "aws_cognito_user_pool_client" "ui_client" {
-  name = "${var.project_name}-ui"
+resource "aws_cognito_user_pool_client" "user_pool_client" {
+  for_each = var.app_clients
 
-  user_pool_id           = aws_cognito_user_pool.user_pool.id
-  generate_secret        = false
-  access_token_validity  = 3600
-  refresh_token_validity = 10
-  id_token_validity      = 60
+  name            = each.value.name
+  user_pool_id    = aws_cognito_user_pool.user_pool.id
+  generate_secret = each.value.generate_secret
 
-  token_validity_units {
-    access_token  = "seconds"
-    id_token      = "minutes"
-    refresh_token = "days"
-  }
+  explicit_auth_flows = each.value.explicit_auth_flows
 
-  prevent_user_existence_errors = "ENABLED"
-  //todo: limit scope for auth
-  explicit_auth_flows           = [
-    "ALLOW_USER_PASSWORD_AUTH",
-    "ALLOW_REFRESH_TOKEN_AUTH",
-    "ALLOW_USER_SRP_AUTH"
-  ]
-
-  callback_urls = split(",", var.allowed_hosts)
-  logout_urls   = split(",", var.allowed_hosts)
-}
-
-resource "aws_cognito_user_pool_client" "api_client" {
-  name = "${var.project_name}-api"
-
-  user_pool_id                  = aws_cognito_user_pool.user_pool.id
-  generate_secret               = true
-  refresh_token_validity        = 90
-  prevent_user_existence_errors = "ENABLED"
-  //todo: limit scope for auth
-  explicit_auth_flows           = [
-    "ALLOW_REFRESH_TOKEN_AUTH",
-    "ALLOW_USER_PASSWORD_AUTH",
-  ]
-
-}
-
-resource "aws_cognito_user_pool_client" "test_api_client" {
-  name = "${var.project_name}-test"
-
-  user_pool_id                  = aws_cognito_user_pool.user_pool.id
-  generate_secret               = false
-  prevent_user_existence_errors = "ENABLED"
-
-  access_token_validity  = 5
-  refresh_token_validity = 60
-  id_token_validity      = 5
+  access_token_validity  = each.value.access_token_validity
+  refresh_token_validity = each.value.refresh_token_validity
+  id_token_validity      = each.value.id_token_validity
 
   token_validity_units {
-    access_token  = "minutes"
-    id_token      = "minutes"
-    refresh_token = "minutes"
+    access_token  = each.value.access_token_units
+    id_token      = each.value.id_token_units
+    refresh_token = each.value.refresh_token_units
   }
-  //todo: limit scope for auth
-  explicit_auth_flows           = [
-    "ALLOW_REFRESH_TOKEN_AUTH",
-    "ALLOW_USER_PASSWORD_AUTH",
-  ]
-
 }
-#resource "aws_cognito_user_pool_domain" "custom_domain" {
-#  user_pool_id = aws_cognito_user_pool.user_pool.id
-#  domain       = var.custom_domain
-#}
-
-output "cognito_ui_client" {
-  value = aws_cognito_user_pool_client.ui_client.id
-}
-
-output "cognito_api_client" {
-  value     = "${aws_cognito_user_pool_client.api_client.id}, ${aws_cognito_user_pool_client.api_client.client_secret}"
-  sensitive = true
-}
+# resource "aws_cognito_user_pool_client" "ui_client" {
+#   prevent_user_existence_errors = "ENABLED"
+#   //todo: limit scope for auth
+#   explicit_auth_flows           = [
+#     "ALLOW_USER_PASSWORD_AUTH",
+#     "ALLOW_REFRESH_TOKEN_AUTH",
+#     "ALLOW_USER_SRP_AUTH"
+#   ]
+#
+#   callback_urls = var.callback_urls
+#   logout_urls   = var.logout_urls
+# }
+#
+# resource "aws_cognito_user_pool_client" "api_client" {
+#   name = "${var.project_name}-api"
+#
+#   user_pool_id                  = aws_cognito_user_pool.user_pool.id
+#   generate_secret               = true
+#   refresh_token_validity        = 90
+#   prevent_user_existence_errors = "ENABLED"
+#   //todo: limit scope for auth
+#   explicit_auth_flows           = [
+#     "ALLOW_REFRESH_TOKEN_AUTH",
+#     "ALLOW_USER_PASSWORD_AUTH",
+#   ]
+#
+# }
+#
+# resource "aws_cognito_user_pool_client" "test_api_client" {
+#   name = "${var.project_name}-test"
+#
+#   user_pool_id                  = aws_cognito_user_pool.user_pool.id
+#   generate_secret               = false
+#   prevent_user_existence_errors = "ENABLED"
+#
+#   access_token_validity  = 5
+#   refresh_token_validity = 60
+#   id_token_validity      = 5
+#
+#   token_validity_units {
+#     access_token  = "minutes"
+#     id_token      = "minutes"
+#     refresh_token = "minutes"
+#   }
+#   //todo: limit scope for auth
+#   explicit_auth_flows           = [
+#     "ALLOW_REFRESH_TOKEN_AUTH",
+#     "ALLOW_USER_PASSWORD_AUTH",
+#   ]
+#
+# }
