@@ -40,3 +40,35 @@ variable "app_clients" {
     refresh_token_units = optional(string, "days")
   }))
 }
+
+variable "password_policy" {
+  description = "Password policy for user pool user"
+  default = {
+    minimum_length                   = 12
+    require_lowercase                = false
+    require_uppercase                = true
+    require_numbers                  = true
+    require_symbols                  = true
+    temporary_password_validity_days = 14
+  }
+  type = object({
+    minimum_length                   = optional(number, 12)
+    require_lowercase                = optional(bool, false)
+    require_uppercase                = optional(bool, true)
+    require_numbers                  = optional(bool, true)
+    require_symbols                  = optional(bool, true)
+    temporary_password_validity_days = optional(number, 14)
+  })
+}
+
+variable "username_attributes" {
+  type    = list(string)
+  default = ["email"]
+}
+
+variable "auto_verified_attributes" {
+  type    = list(string)
+  default = ["email"]
+}
+
+varia
