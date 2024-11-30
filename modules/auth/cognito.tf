@@ -52,9 +52,9 @@ resource "aws_cognito_user_pool" "user_pool" {
 }
 
 resource "aws_cognito_user_pool_client" "user_pool_client" {
-  for_each = var.app_clients
+  for_each =  { for app_client in var.app_clients : app_client.name => app_client }
 
-  name            = each.value.name
+  name            = each.key
   user_pool_id    = aws_cognito_user_pool.user_pool.id
   generate_secret = each.value.generate_secret
 
