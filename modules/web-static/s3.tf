@@ -22,27 +22,9 @@ resource "aws_s3_bucket_website_configuration" "this" {
   }
 
   error_document {
-    key = var.error_page
+    key = var.default_page
   }
 }
-
-#resource "aws_s3_bucket_policy" "this" {
-#  bucket = aws_s3_bucket.s3_bucket_static.id
-#
-#  policy = jsonencode({
-#    Version   = "2012-10-17"
-#    Id        = "AllowGetObjects"
-#    Statement = [
-#      {
-#        Sid       = "AllowPublic"
-#        Effect    = "Allow"
-#        Principal = "*"
-#        Action    = "s3:GetObject"
-#        Resource  = "${aws_s3_bucket.s3_bucket_static.arn}/**"
-#      }
-#    ]
-#  })
-#}
 
 resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.s3_bucket_static.id
