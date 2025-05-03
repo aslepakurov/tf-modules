@@ -14,7 +14,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.5.7
+          terraform_version: 1.9.8
 
       - name: Terraform Init for IAM Users
         working-directory: ./modules/iam/users
