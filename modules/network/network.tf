@@ -6,8 +6,8 @@ data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+  enable_dns_support   = var.enable_dns_support
+  enable_dns_hostnames = var.enable_dns_hostnames
   tags = merge(var.tags, {
     Name = "${var.aws_project}-VPC"
   })
@@ -75,18 +75,57 @@ resource "aws_route_table_association" "public-route-association" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# PRIVATE ROUTE TABLE (NO INTERNET ACCESS)
+# NAT GATEWAY (OPTIONAL)
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_eip" "nat" {
+  count = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : var.az_count) : 0
+  domain = "vpc"
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-NatGateway-EIP-${count.index + 1}"
+  })
+}
+
+resource "aws_nat_gateway" "nat_gateway" {
+  count         = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : var.az_count) : 0
+  allocation_id = element(aws_eip.nat.*.id, count.index)
+  subnet_id     = element(aws_subnet.public.*.id, count.index)
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-NatGateway-${count.index + 1}"
+  })
+
+  depends_on = [aws_internet_gateway.igw]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# PRIVATE ROUTE TABLE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_route_table" "private-route-table" {
+  count  = var.single_nat_gateway ? 1 : var.az_count
   vpc_id = aws_vpc.main.id
+
+  dynamic "route" {
+    for_each = var.enable_nat_gateway ? [1] : []
+    content {
+      cidr_block     = "0.0.0.0/0"
+      nat_gateway_id = element(
+        aws_nat_gateway.nat_gateway.*.id,
+        var.single_nat_gateway ? 0 : count.index
+      )
+    }
+  }
+
   tags = merge(var.tags, {
-    Name = "${var.aws_project}-PrivateRouteTable"
+    Name = "${var.aws_project}-PrivateRouteTable${var.single_nat_gateway ? "" : "-${count.index + 1}"}"
   })
 }
 
 resource "aws_route_table_association" "private-route-association" {
   count          = var.az_count
   subnet_id      = element(aws_subnet.private.*.id, count.index)
-  route_table_id = aws_route_table.private-route-table.id
+  route_table_id = element(
+    aws_route_table.private-route-table.*.id,
+    var.single_nat_gateway ? 0 : count.index
+  )
 }
