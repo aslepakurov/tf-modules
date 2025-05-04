@@ -6,6 +6,7 @@ resource "aws_cognito_user_pool" "user_pool" {
   name                     = local.user_pool
   username_attributes      = var.username_attributes
   auto_verified_attributes = var.auto_verified_attributes
+  deletion_protection      = "ACTIVE"
 
   //TODO: set up non-default email
   email_configuration {
