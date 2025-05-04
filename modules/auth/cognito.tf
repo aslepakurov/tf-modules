@@ -76,6 +76,12 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
 
   explicit_auth_flows = each.value.explicit_auth_flows
 
+  # OAuth settings
+  allowed_oauth_flows               = each.value.allowed_oauth_flows
+  allowed_oauth_flows_user_pool_client = each.value.allowed_oauth_flows_user_pool_client
+  allowed_oauth_scopes              = each.value.allowed_oauth_scopes
+  supported_identity_providers      = each.value.supported_identity_providers
+
   access_token_validity  = each.value.access_token_validity
   refresh_token_validity = each.value.refresh_token_validity
   id_token_validity      = each.value.id_token_validity

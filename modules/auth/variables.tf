@@ -39,6 +39,12 @@ variable "app_clients" {
     callback_urls = optional(list(string), [])
     logout_urls = optional(list(string), [])
 
+    // OAuth settings
+    allowed_oauth_flows = optional(list(string), [])
+    allowed_oauth_flows_user_pool_client = optional(bool, false)
+    allowed_oauth_scopes = optional(list(string), [])
+    supported_identity_providers = optional(list(string), ["COGNITO"])
+
     // validity
     access_token_validity = optional(number, 3600)
     refresh_token_validity = optional(number, 10)
