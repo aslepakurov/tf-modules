@@ -8,6 +8,11 @@ variable "custom_domain" {
   default = ""
 }
 
+variable "cert_arn" {
+  type = string
+  default = ""
+}
+
 variable "callback_urls" {
   type    = list(string)
   default = []

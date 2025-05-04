@@ -64,6 +64,7 @@ resource "aws_cognito_user_pool_domain" "cognito_custom_domain" {
   count        = var.custom_domain == "" ? 0 : 1
   domain       = var.custom_domain
   user_pool_id = aws_cognito_user_pool.user_pool.id
+  certificate_arn = var.cert_arn
 }
 
 resource "aws_cognito_user_pool_client" "user_pool_client" {
