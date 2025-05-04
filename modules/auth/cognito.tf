@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.81.0"
+    }
+  }
+}
 locals {
   user_pool = "${var.project_name}-user-pool"
 }
@@ -50,6 +58,12 @@ resource "aws_cognito_user_pool" "user_pool" {
   }
 
 
+}
+
+resource "aws_cognito_user_pool_domain" "cognito_custom_domain" {
+  count        = var.custom_domain == "" ? 0 : 1
+  domain       = var.custom_domain
+  user_pool_id = aws_cognito_user_pool.user_pool.id
 }
 
 resource "aws_cognito_user_pool_client" "user_pool_client" {

@@ -3,6 +3,11 @@ variable "project_name" {
   description = "Project prefix"
 }
 
+variable "custom_domain" {
+  type = string
+  default = ""
+}
+
 variable "callback_urls" {
   type    = list(string)
   default = []
