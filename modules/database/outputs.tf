@@ -36,6 +36,6 @@ output "db_security_group_id" {
 
 output "db_connection_url" {
   description = "The connection URL for the database in the format postgresql://username:password@endpoint:port/dbname"
-  value       = "postgresql://${aws_db_instance.this.username}:${aws_db_instance.this.password}@${aws_db_instance.this.endpoint}/${aws_db_instance.this.db_name}"
+  value       = aws_secretsmanager_secret_version.db_url_version.secret_string
   sensitive   = true
 }

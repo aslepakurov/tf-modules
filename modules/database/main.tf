@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.81.0"
+    }
+  }
+}
 # ---------------------------------------------------------------------------------------------------------------------
 # RDS PostgreSQL Instance
 # ---------------------------------------------------------------------------------------------------------------------
@@ -118,4 +126,14 @@ resource "aws_db_instance" "this" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "aws_secretsmanager_secret" "db_url" {
+  name = "thiisis/db/manager/url"
+}
+
+resource "aws_secretsmanager_secret_version" "db_url_version" {
+  secret_id = aws_secretsmanager_secret.db_url.id
+
+  secret_string = "postgresql://${aws_db_instance.this.username}:${aws_db_instance.this.password}@${aws_db_instance.this.endpoint}/${aws_db_instance.this.db_name}"
 }
