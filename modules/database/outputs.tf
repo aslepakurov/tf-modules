@@ -33,13 +33,3 @@ output "db_security_group_id" {
   description = "The security group ID associated with the database"
   value       = aws_security_group.this.id
 }
-
-output "db_connection_url_secret" {
-  value = aws_secretsmanager_secret.db_url.arn
-}
-
-output "db_connection_url" {
-  description = "The connection URL for the database in the format postgresql://username:password@endpoint:port/dbname"
-  value       = aws_secretsmanager_secret_version.db_url_version.secret_string
-  sensitive   = true
-}
