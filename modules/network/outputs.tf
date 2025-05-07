@@ -17,9 +17,14 @@ output "public_subnet_ids" {
   value       = aws_subnet.public[*].id
 }
 
+output "private_route_table_ids" {
+  description = "List of IDs of private route tables"
+  value       = aws_route_table.private-route-table[*].id
+}
+
 output "private_route_table_id" {
-  description = "ID of the private route table"
-  value       = aws_route_table.private-route-table.id
+  description = "ID of the first private route table (for backward compatibility)"
+  value       = aws_route_table.private-route-table[0].id
 }
 
 output "public_route_table_id" {
