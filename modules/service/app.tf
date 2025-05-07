@@ -37,6 +37,9 @@ resource "aws_apprunner_service" "service" {
         egress_type       = "VPC"
         vpc_connector_arn = aws_apprunner_vpc_connector.connector[0].arn
       }
+      ingress_configuration {
+        is_publicly_accessible = true
+      }
     }
   }
 
