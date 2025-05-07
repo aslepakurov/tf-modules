@@ -33,3 +33,9 @@ output "db_security_group_id" {
   description = "The security group ID associated with the database"
   value       = aws_security_group.this.id
 }
+
+output "db_connection_url" {
+  description = "The connection URL for the database in the format postgresql://username:password@endpoint:port/dbname"
+  value       = "postgresql://${aws_db_instance.this.username}:${aws_db_instance.this.password}@${aws_db_instance.this.endpoint}/${aws_db_instance.this.db_name}"
+  sensitive   = true
+}

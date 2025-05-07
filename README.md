@@ -138,17 +138,27 @@ module "service" {
   instance_iam_arn = "arn:aws:iam::123456789012:role/AppRunnerInstanceRole"
   access_iam_arn = "arn:aws:iam::123456789012:role/AppRunnerAccessRole"
 
+  # Environment variables
   env = {
     "NODE_ENV" = "production"
     "LOG_LEVEL" = "info"
   }
 
+  # Secret environment variables
   secret_env = {
-    "DATABASE_URL" = "arn:aws:secretsmanager:us-west-2:123456789012:secret:database-url"
+    "API_KEY" = "arn:aws:secretsmanager:us-west-2:123456789012:secret:api-key"
   }
 
+  # Auto-scaling configuration
   min_workers = 1
   max_workers = 5
+
+  # Network configuration (optional)
+  vpc_id     = module.network.vpc_id
+  subnet_ids = module.network.private_subnet_ids
+
+  # Database connection (optional)
+  db_connection_url = module.database.db_connection_url
 
   tags = {
     "Environment" = "production"
@@ -174,22 +184,29 @@ module "web_static" {
 module "database" {
   source = "git::https://github.com/aslepakurov/tf-modules.git//modules/database"
 
+  # Basic configuration
   identifier = "example-postgres"
   engine_version = "14.6"
   instance_class = "db.t3.small"
+  db_name = "application"
 
+  # Storage configuration
   allocated_storage = 20
   max_allocated_storage = 100
+  storage_encrypted = true
 
+  # Authentication
   username = "dbadmin"
   password = var.db_password # Use a variable or AWS Secrets Manager
 
-  # Use outputs from the network module
+  # Network configuration - use private subnets for security
   vpc_id = module.network.vpc_id
-  subnet_ids = module.network.private_subnets
+  subnet_ids = module.network.private_subnet_ids
+  publicly_accessible = false
 
-  # Allow access from the service security group
-  security_group_ingress_security_groups = [module.service.security_group_id]
+  # Security configuration - only allow access from the app
+  security_group_ingress_security_groups = [module.app.app_security_group_id]
+  security_group_ingress_cidr_blocks = [] # No direct access from public IPs
 
   # High availability and backup settings
   multi_az = true
@@ -200,8 +217,6 @@ module "database" {
   monitoring_interval = 60
   performance_insights_enabled = true
   performance_insights_retention_period = 7
-
-  db_name = "application"
 
   tags = {
     "Environment" = "production"
@@ -215,9 +230,10 @@ output "database_endpoint" {
   value       = module.database.db_instance_endpoint
 }
 
-output "database_name" {
-  description = "The database name"
-  value       = module.database.db_instance_name
+output "database_connection_url" {
+  description = "The database connection URL"
+  value       = module.database.db_connection_url
+  sensitive   = true
 }
 ```
 
@@ -229,6 +245,56 @@ Some modules work well together:
 - The **Database** module can provide connection information to the **Service** module
 - The **Auth** module can be used to secure the applications deployed with the **Service** module
 - The **Web Static** module can host the frontend that communicates with backends deployed using the **Service** module
+
+## Integrated Examples
+
+We provide examples that demonstrate how to use multiple modules together to create complete architectures:
+
+### App with Database Example
+
+The [App with Database Example](examples/app_with_database) demonstrates how to create a secure architecture where:
+
+1. The app and database are in the same VPC
+2. The database is in a private subnet and not accessible from the public internet
+3. The app can access the database through the VPC
+4. The database connection URL is passed to the app as an environment variable
+
+```hcl
+module "network" {
+  source = "git::https://github.com/aslepakurov/tf-modules.git//modules/network"
+  # Network configuration
+}
+
+module "database" {
+  source = "git::https://github.com/aslepakurov/tf-modules.git//modules/database"
+
+  # Database configuration
+
+  # Network integration
+  vpc_id     = module.network.vpc_id
+  subnet_ids = module.network.private_subnet_ids
+
+  # Security configuration - make it private
+  publicly_accessible = false
+  security_group_ingress_security_groups = [module.app.app_security_group_id]
+  security_group_ingress_cidr_blocks = []
+}
+
+module "app" {
+  source = "git::https://github.com/aslepakurov/tf-modules.git//modules/service"
+
+  # App configuration
+
+  # Network integration
+  vpc_id     = module.network.vpc_id
+  subnet_ids = module.network.private_subnet_ids
+
+  # Database integration
+  db_connection_url = module.database.db_connection_url
+}
+```
+
+See the [example README](examples/app_with_database/README.md) for more details.
 
 ## Contributing
 

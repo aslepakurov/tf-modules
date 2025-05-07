@@ -20,7 +20,7 @@ resource "aws_apprunner_service" "service" {
       image_repository_type = "ECR"
       image_configuration {
         port                          = var.service_port
-        runtime_environment_variables = var.env
+        runtime_environment_variables = var.db_connection_url != null ? merge(var.env, { DATABASE_URL = var.db_connection_url }) : var.env
         runtime_environment_secrets   = var.secret_env
       }
     }
@@ -28,7 +28,51 @@ resource "aws_apprunner_service" "service" {
   instance_configuration {
     instance_role_arn = var.instance_iam_arn
   }
+
+  # VPC configuration if VPC ID and subnet IDs are provided
+  dynamic "network_configuration" {
+    for_each = var.vpc_id != null && var.subnet_ids != null ? [1] : []
+    content {
+      egress_configuration {
+        egress_type       = "VPC"
+        vpc_connector_arn = aws_apprunner_vpc_connector.connector[0].arn
+      }
+    }
+  }
+
   tags = var.tags
+}
+
+# Create VPC connector if VPC ID and subnet IDs are provided
+resource "aws_apprunner_vpc_connector" "connector" {
+  count = var.vpc_id != null && var.subnet_ids != null ? 1 : 0
+
+  vpc_connector_name = "${var.service_name}-vpc-connector"
+  subnets            = var.subnet_ids
+  security_groups    = [aws_security_group.app[0].id]
+
+  tags = var.tags
+}
+
+# Create security group for the app if VPC ID is provided
+resource "aws_security_group" "app" {
+  count = var.vpc_id != null ? 1 : 0
+
+  name        = "${var.service_name}-sg"
+  description = "Security group for ${var.service_name} AppRunner service"
+  vpc_id      = var.vpc_id
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.service_name}-sg"
+  })
 }
 
 resource "aws_apprunner_custom_domain_association" "service_custom_domain" {
@@ -38,4 +82,9 @@ resource "aws_apprunner_custom_domain_association" "service_custom_domain" {
 
 output "apprunner_service_url" {
   value = "https://${aws_apprunner_service.service.service_url}"
+}
+
+output "app_security_group_id" {
+  description = "The ID of the security group associated with the app"
+  value       = var.vpc_id != null ? aws_security_group.app[0].id : null
 }

@@ -69,3 +69,26 @@ variable "tags" {
   description = "AWS tags"
   default     = {}
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Network and Database Connection Variables
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "vpc_id" {
+  type        = string
+  description = "The ID of the VPC where the service will be deployed"
+  default     = null
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs where the service will be deployed"
+  default     = null
+}
+
+variable "db_connection_url" {
+  type        = string
+  description = "Database connection URL"
+  default     = null
+  sensitive   = true
+}
