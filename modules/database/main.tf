@@ -124,6 +124,6 @@ resource "aws_db_instance" "this" {
   tags = var.tags
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = var.deletion_protection
   }
 }
