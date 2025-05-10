@@ -4,7 +4,6 @@
 
 locals {
   lambda_function_name = "${var.project_name}-cognito-post-confirmation"
-  create_lambda        = var.enable_post_confirmation_lambda
   create_lambda_role   = local.create_lambda && var.lambda_role_arn == ""
 }
 
