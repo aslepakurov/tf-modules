@@ -8,6 +8,7 @@ terraform {
 }
 locals {
   user_pool = "${var.project_name}-user-pool"
+  create_lambda = var.enable_post_confirmation_lambda
 }
 
 resource "aws_cognito_user_pool" "user_pool" {
@@ -57,7 +58,13 @@ resource "aws_cognito_user_pool" "user_pool" {
     required                 = false
   }
 
-
+  # Add Lambda triggers directly to the user pool
+  dynamic "lambda_config" {
+    for_each = local.create_lambda ? [1] : []
+    content {
+      post_confirmation = aws_lambda_function.post_confirmation[0].arn
+    }
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "cognito_custom_domain" {

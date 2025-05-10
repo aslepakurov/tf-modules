@@ -91,6 +91,9 @@ resource "aws_lambda_function" "post_confirmation" {
   filename         = data.archive_file.lambda_zip[0].output_path
   source_code_hash = data.archive_file.lambda_zip[0].output_base64sha256
 
+  # Add the layer directly to the Lambda function
+  layers = local.create_lambda ? [aws_lambda_layer_version.psycopg2_layer[0].arn] : []
+
   environment {
     variables = {
       RDS_URL      = var.rds_url
@@ -116,13 +119,7 @@ resource "aws_lambda_function" "post_confirmation" {
   ]
 }
 
-# Add Lambda as a Cognito post-confirmation trigger
-resource "aws_cognito_user_pool_lambda_config" "post_confirmation_trigger" {
-  count        = local.create_lambda ? 1 : 0
-  user_pool_id = aws_cognito_user_pool.user_pool.id
-
-  post_confirmation = aws_lambda_function.post_confirmation[0].arn
-}
+# Lambda trigger is now configured directly in the Cognito user pool resource
 
 # Permission for Cognito to invoke the Lambda function
 resource "aws_lambda_permission" "allow_cognito" {
@@ -147,12 +144,7 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
   s3_key    = "psycopg2/python3.9/psycopg2-layer.zip"
 }
 
-# Attach the psycopg2 layer to the Lambda function
-resource "aws_lambda_function_layer_version_association" "psycopg2_layer_association" {
-  count          = local.create_lambda ? 1 : 0
-  function_name  = aws_lambda_function.post_confirmation[0].function_name
-  layer_version  = aws_lambda_layer_version.psycopg2_layer[0].id
-}
+# Layer is now attached directly in the Lambda function resource
 
 # Get current AWS region
 data "aws_region" "current" {}
