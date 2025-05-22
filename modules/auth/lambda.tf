@@ -139,11 +139,8 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
 
   # Note: In a real implementation, you would need to create and upload a ZIP file containing the psycopg2 library
   # For this example, we're assuming the layer is created externally and the S3 location is provided
-  s3_bucket = "lambda-layers-${data.aws_region.current.name}"
+  s3_bucket = "thiis-is-lambda-layers"
   s3_key    = "psycopg2/python3.9/psycopg2-layer.zip"
 }
 
 # Layer is now attached directly in the Lambda function resource
-
-# Get current AWS region
-data "aws_region" "current" {}
