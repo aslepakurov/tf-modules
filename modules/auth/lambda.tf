@@ -1,18 +1,21 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Lambda Function for Cognito Post-Confirmation
+# Lambda Function for Cognito Post-Confirmation (Docker-based)
 # ---------------------------------------------------------------------------------------------------------------------
 
 locals {
   lambda_function_name = "${var.project_name}-cognito-post-confirmation"
   create_lambda_role   = local.create_lambda && var.lambda_role_arn == ""
+  ecr_repository_name  = "${var.project_name}-cognito-post-confirmation"
+  image_tag            = "latest"
 }
 
-# Create a zip file of the Lambda function code
-data "archive_file" "lambda_zip" {
-  count       = local.create_lambda ? 1 : 0
-  type        = "zip"
-  source_file = "${path.module}/lambda_function.py"
-  output_path = "${path.module}/lambda_function.zip"
+# ECR Repository for Docker image
+resource "aws_ecr_repository" "lambda_ecr_repo" {
+  count = local.create_lambda ? 1 : 0
+  name  = local.ecr_repository_name
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 # IAM role for the Lambda function
@@ -80,18 +83,14 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
 resource "aws_lambda_function" "post_confirmation" {
   count         = local.create_lambda ? 1 : 0
   function_name = local.lambda_function_name
-  description   = "Lambda function to insert user data into RDS after Cognito sign-up"
+  description   = "Docker-based Lambda function to insert user data into RDS after Cognito sign-up"
   role          = local.create_lambda_role ? aws_iam_role.lambda_role[0].arn : var.lambda_role_arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.9"
   timeout       = 30
   memory_size   = 128
-
-  filename         = data.archive_file.lambda_zip[0].output_path
-  source_code_hash = data.archive_file.lambda_zip[0].output_base64sha256
-
-  # Add the layer directly to the Lambda function
-  layers = local.create_lambda ? [aws_lambda_layer_version.psycopg2_layer[0].arn] : []
+  
+  # Use Docker image instead of zip file
+  package_type = "Image"
+  image_uri    = "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${local.image_tag}"
 
   environment {
     variables = {
@@ -129,18 +128,3 @@ resource "aws_lambda_permission" "allow_cognito" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.user_pool.arn
 }
-
-# Layer for psycopg2 dependency
-resource "aws_lambda_layer_version" "psycopg2_layer" {
-  count            = local.create_lambda ? 1 : 0
-  layer_name       = "${var.project_name}-psycopg2-layer"
-  description      = "Layer containing psycopg2 for PostgreSQL connections"
-  compatible_runtimes = ["python3.9"]
-
-  # Note: In a real implementation, you would need to create and upload a ZIP file containing the psycopg2 library
-  # For this example, we're assuming the layer is created externally and the S3 location is provided
-  s3_bucket = "thiis-is-lambda-layers"
-  s3_key    = "psycopg2/python3.9/psycopg2-layer.zip"
-}
-
-# Layer is now attached directly in the Lambda function resource
