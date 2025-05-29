@@ -38,7 +38,7 @@ def insert_user(user_id, email):
         cursor = conn.cursor()
 
         # Using parameterized query to prevent SQL injection
-        insert_query = sql.SQL("INSERT INTO users (id, email) VALUES (%s, %s)")
+        insert_query = sql.SQL("INSERT INTO users (id, email, is_dev) VALUES (%s, %s, false)")
         cursor.execute(insert_query, (user_id, email))
 
         conn.commit()
