@@ -34,14 +34,14 @@ variable "enable_dns_hostnames" {
 
 variable "enable_nat_gateway" {
   type        = bool
-  description = "Should be true if you want to provision NAT Gateways for each of your private networks"
-  default     = false
+  description = "Should be true if you want to provision NAT Gateways for your private networks"
+  default     = true
 }
 
 variable "single_nat_gateway" {
   type        = bool
-  description = "Should be true if you want to provision a single shared NAT Gateway across all of your private networks"
-  default     = false
+  description = "Should be true if you want to provision a single shared NAT Gateway across all of your private networks (cost-effective but less redundant)"
+  default     = true
 }
 
 variable "tags" {

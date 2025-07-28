@@ -73,8 +73,10 @@ module "network" {
   # Optional parameters with defaults
   enable_dns_support   = true
   enable_dns_hostnames = true
-  enable_nat_gateway   = true  # Set to false for dev environments to save costs
-  single_nat_gateway   = true  # Set to false for production for high availability
+
+  # Cost optimization settings for NAT Gateways
+  enable_nat_gateway   = true  # Set to false to disable NAT Gateways entirely (no internet access from private subnets)
+  single_nat_gateway   = true  # Default: cost-effective but less redundant. Set to false for high availability but higher cost.
 
   tags = {
     "Environment" = "dev"
