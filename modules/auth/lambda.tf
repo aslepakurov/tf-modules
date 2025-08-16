@@ -9,8 +9,6 @@ locals {
   image_tag            = "latest"
   use_custom_image     = var.lambda_ecr_image_uri != ""
 
-
-  lambda_ecr_dependencies = local.use_custom_image ? [] : [aws_ecr_repository.lambda_ecr_repo[0]]
 }
 
 # ECR Repository for Docker image
@@ -83,6 +81,35 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
+# IAM policy for Lambda to access ECR
+resource "aws_iam_policy" "lambda_ecr_policy" {
+  count       = local.create_lambda_role ? 1 : 0
+  name        = "${local.lambda_function_name}-ecr-policy"
+  description = "IAM policy for Lambda to access ECR images"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the ECR policy to the Lambda role
+resource "aws_iam_role_policy_attachment" "lambda_ecr_policy_attachment" {
+  count      = local.create_lambda_role ? 1 : 0
+  role       = aws_iam_role.lambda_role[0].name
+  policy_arn = aws_iam_policy.lambda_ecr_policy[0].arn
+}
+
 # Lambda function
 resource "aws_lambda_function" "post_confirmation" {
   count         = local.create_lambda ? 1 : 0
@@ -115,10 +142,10 @@ resource "aws_lambda_function" "post_confirmation" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_vpc_access,
-    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
-  ]
+  aws_iam_role_policy_attachment.lambda_basic_execution,
+  aws_iam_role_policy_attachment.lambda_vpc_access,
+  aws_iam_role_policy_attachment.lambda_rds_policy_attachment
+]
 }
 
 # Lambda trigger is now configured directly in the Cognito user pool resource
