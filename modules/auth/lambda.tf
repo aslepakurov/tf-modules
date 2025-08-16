@@ -9,12 +9,6 @@ locals {
   image_tag            = "latest"
   use_custom_image     = var.lambda_ecr_image_uri != ""
 
-  # Define dependencies for Lambda function
-  lambda_basic_dependencies = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_vpc_access,
-    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
-  ]
 
   lambda_ecr_dependencies = local.use_custom_image ? [] : [aws_ecr_repository.lambda_ecr_repo[0]]
 }
@@ -120,7 +114,11 @@ resource "aws_lambda_function" "post_confirmation" {
     }
   }
 
-  depends_on = local.lambda_basic_dependencies
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_vpc_access,
+    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
+  ]
 }
 
 # Lambda trigger is now configured directly in the Cognito user pool resource
