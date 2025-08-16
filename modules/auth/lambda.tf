@@ -8,6 +8,15 @@ locals {
   ecr_repository_name  = "${var.project_name}-cognito-post-confirmation"
   image_tag            = "latest"
   use_custom_image     = var.lambda_ecr_image_uri != ""
+
+  # Define dependencies for Lambda function
+  lambda_basic_dependencies = [
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_vpc_access,
+    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
+  ]
+
+  lambda_ecr_dependencies = local.use_custom_image ? [] : [aws_ecr_repository.lambda_ecr_repo[0]]
 }
 
 # ECR Repository for Docker image
@@ -111,16 +120,7 @@ resource "aws_lambda_function" "post_confirmation" {
     }
   }
 
-  depends_on = local.use_custom_image ? [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_vpc_access,
-    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
-  ] : [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_vpc_access,
-    aws_iam_role_policy_attachment.lambda_rds_policy_attachment,
-    aws_ecr_repository.lambda_ecr_repo[0]
-  ]
+  depends_on = concat(local.lambda_basic_dependencies, local.lambda_ecr_dependencies)
 }
 
 # Lambda trigger is now configured directly in the Cognito user pool resource
