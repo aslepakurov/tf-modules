@@ -143,3 +143,9 @@ variable "security_group_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "lambda_ecr_image_uri" {
+  description = "ECR image URI for Lambda function. If provided, this image will be used instead of building a new one."
+  type        = string
+  default     = ""
+}

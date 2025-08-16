@@ -7,11 +7,12 @@ locals {
   create_lambda_role   = local.create_lambda && var.lambda_role_arn == ""
   ecr_repository_name  = "${var.project_name}-cognito-post-confirmation"
   image_tag            = "latest"
+  use_custom_image     = var.lambda_ecr_image_uri != ""
 }
 
 # ECR Repository for Docker image
 resource "aws_ecr_repository" "lambda_ecr_repo" {
-  count = local.create_lambda ? 1 : 0
+  count = local.create_lambda && !local.use_custom_image ? 1 : 0
   name  = local.ecr_repository_name
   image_scanning_configuration {
     scan_on_push = true
@@ -87,10 +88,10 @@ resource "aws_lambda_function" "post_confirmation" {
   role          = local.create_lambda_role ? aws_iam_role.lambda_role[0].arn : var.lambda_role_arn
   timeout       = 30
   memory_size   = 128
-  
+
   # Use Docker image instead of zip file
   package_type = "Image"
-  image_uri    = "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${local.image_tag}"
+  image_uri    = local.use_custom_image ? var.lambda_ecr_image_uri : "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${local.image_tag}"
 
   environment {
     variables = {
@@ -110,10 +111,15 @@ resource "aws_lambda_function" "post_confirmation" {
     }
   }
 
-  depends_on = [
+  depends_on = local.use_custom_image ? [
     aws_iam_role_policy_attachment.lambda_basic_execution,
     aws_iam_role_policy_attachment.lambda_vpc_access,
     aws_iam_role_policy_attachment.lambda_rds_policy_attachment
+  ] : [
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_vpc_access,
+    aws_iam_role_policy_attachment.lambda_rds_policy_attachment,
+    aws_ecr_repository.lambda_ecr_repo[0]
   ]
 }
 
