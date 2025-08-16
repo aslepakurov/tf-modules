@@ -86,3 +86,66 @@ variable "auto_verified_attributes" {
   type    = list(string)
   default = ["email"]
 }
+
+# Lambda function variables
+variable "enable_post_confirmation_lambda" {
+  description = "Whether to create a Lambda function that inserts user data into RDS after Cognito sign-up"
+  type        = bool
+  default     = false
+}
+
+variable "lambda_role_arn" {
+  description = "ARN of the IAM role for the Lambda function to use. If not provided, a new role will be created."
+  type        = string
+  default     = ""
+}
+
+variable "rds_url" {
+  description = "RDS URL with schema, host, and port (e.g., postgresql://hostname:5432)"
+  type        = string
+  default     = ""
+}
+
+variable "rds_db_name" {
+  description = "RDS database name"
+  type        = string
+  default     = ""
+}
+
+variable "rds_username" {
+  description = "RDS username"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "rds_password" {
+  description = "RDS password"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "vpc_id" {
+  description = "VPC ID for Lambda function"
+  type        = string
+  default     = ""
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for Lambda function"
+  type        = list(string)
+  default     = []
+}
+
+variable "security_group_ids" {
+  description = "List of security group IDs for Lambda function"
+  type        = list(string)
+  default     = []
+}
+
+variable "lambda_ecr_image_uri" {
+  description = "ECR image URI for Lambda function. If provided, this image will be used instead of building a new one."
+  type        = string
+  default     = ""
+}
