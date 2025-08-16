@@ -120,7 +120,7 @@ resource "aws_lambda_function" "post_confirmation" {
     }
   }
 
-  depends_on = concat(local.lambda_basic_dependencies, local.lambda_ecr_dependencies)
+  depends_on = local.lambda_basic_dependencies
 }
 
 # Lambda trigger is now configured directly in the Cognito user pool resource
