@@ -154,7 +154,8 @@ resource "aws_lambda_function" "post_confirmation" {
 resource "aws_lambda_permission" "allow_cognito" {
   count         = local.create_lambda ? 1 : 0
   statement_id  = "AllowExecutionFromCognito"
-  action        = "lambda:InvokeFunction"
+  # action        = "lambda:InvokeFunction"
+  action        = "lambda:*"
   function_name = aws_lambda_function.post_confirmation[0].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.user_pool.arn
