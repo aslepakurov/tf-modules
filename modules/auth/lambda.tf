@@ -60,34 +60,6 @@ resource "aws_iam_policy" "lambda_rds_policy" {
   })
 }
 
-# IAM policy for Lambda to access Cognito
-resource "aws_iam_policy" "lambda_cognito_policy" {
-  count       = local.create_lambda_role ? 1 : 0
-  name        = "${local.lambda_function_name}-cognito-policy"
-  description = "IAM policy for Lambda to access Cognito"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "cognito-idp:ListUsers",
-          "cognito-idp:AdminGetUser"
-        ]
-        Effect   = "Allow"
-        Resource = aws_cognito_user_pool.user_pool.arn
-      }
-    ]
-  })
-}
-
-# Attach the Cognito policy to the Lambda role
-resource "aws_iam_role_policy_attachment" "lambda_cognito_policy_attachment" {
-  count      = local.create_lambda_role ? 1 : 0
-  role       = aws_iam_role.lambda_role[0].name
-  policy_arn = aws_iam_policy.lambda_cognito_policy[0].arn
-}
-
 # Attach the RDS policy to the Lambda role
 resource "aws_iam_role_policy_attachment" "lambda_rds_policy_attachment" {
   count      = local.create_lambda_role ? 1 : 0
@@ -157,7 +129,6 @@ resource "aws_lambda_function" "post_confirmation" {
       RDS_DB_NAME  = var.rds_db_name
       RDS_USERNAME = var.rds_username
       RDS_PASSWORD = var.rds_password
-      USER_POOL_ID = aws_cognito_user_pool.user_pool.id
     }
   }
 
@@ -171,10 +142,10 @@ resource "aws_lambda_function" "post_confirmation" {
   }
 
   depends_on = [
-  aws_iam_role_policy_attachment.lambda_basic_execution,
-  aws_iam_role_policy_attachment.lambda_vpc_access,
-  aws_iam_role_policy_attachment.lambda_rds_policy_attachment
-]
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_vpc_access,
+    aws_iam_role_policy_attachment.lambda_rds_policy_attachment
+  ]
 }
 
 # Lambda trigger is now configured directly in the Cognito user pool resource
@@ -184,6 +155,15 @@ resource "aws_lambda_permission" "allow_cognito_invoke" {
   count         = local.create_lambda ? 1 : 0
   statement_id  = "AllowExecutionFromCognito"
   action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_confirmation[0].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.user_pool.arn
+}
+
+resource "aws_lambda_permission" "allow_cognito_create" {
+  count         = local.create_lambda ? 1 : 0
+  statement_id  = "AllowExecutionFromCognito"
+  action        = "lambda:CreateFunction"
   function_name = aws_lambda_function.post_confirmation[0].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.user_pool.arn
