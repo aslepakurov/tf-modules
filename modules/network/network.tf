@@ -131,11 +131,19 @@ resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id            = aws_vpc.main.id
   service_name      = "com.amazonaws.${var.aws_region}.dynamodb"
   vpc_endpoint_type = "Gateway"
-  route_table_ids   = aws_route_table.private-route-table[*].id
+  # Don't specify route_table_ids here to avoid conflicts with existing route table associations
+  # Will use aws_vpc_endpoint_route_table_association resources instead
 
   tags = merge(var.tags, {
     Name = "${var.aws_project}-DynamoDBEndpoint"
   })
+}
+
+# Create explicit VPC endpoint route table associations to avoid conflicts
+resource "aws_vpc_endpoint_route_table_association" "dynamodb_endpoint_route_table" {
+  count           = var.az_count
+  vpc_endpoint_id = aws_vpc_endpoint.dynamodb.id
+  route_table_id  = aws_route_table.private-route-table[count.index].id
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
