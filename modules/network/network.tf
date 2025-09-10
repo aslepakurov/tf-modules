@@ -137,3 +137,38 @@ resource "aws_vpc_endpoint" "dynamodb" {
     Name = "${var.aws_project}-DynamoDBEndpoint"
   })
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# VPC ENDPOINT FOR COGNITO
+# ---------------------------------------------------------------------------------------------------------------------
+# Note: Interface type VPC endpoints require security groups (unlike Gateway endpoints)
+
+resource "aws_vpc_endpoint" "cognito" {
+  vpc_id             = aws_vpc.main.id
+  service_name       = "com.amazonaws.${var.aws_region}.cognito-idp"
+  vpc_endpoint_type  = "Interface"
+  subnet_ids         = aws_subnet.private[*].id
+  security_group_ids = [aws_security_group.cognito_endpoint.id]  # Required for Interface endpoints
+  private_dns_enabled = true
+
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-CognitoEndpoint"
+  })
+}
+
+resource "aws_security_group" "cognito_endpoint" {
+  name        = "${var.aws_project}-cognito-endpoint-sg"
+  description = "Security group for Cognito VPC endpoint"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-CognitoEndpointSG"
+  })
+}
