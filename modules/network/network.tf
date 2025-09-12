@@ -76,10 +76,11 @@ resource "aws_route_table_association" "public-route-association" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # NAT GATEWAY FOR PRIVATE SUBNET INTERNET ACCESS
+# Used for accessing AWS services that don't support VPC endpoints (like Cognito)
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_eip" "nat" {
-  count = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : var.az_count) : 0
+  count = var.single_nat_gateway ? 1 : var.az_count
   domain = "vpc"
   tags = merge(var.tags, {
     Name = "${var.aws_project}-NAT-EIP-${count.index + 1}"
@@ -87,7 +88,7 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "nat" {
-  count         = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : var.az_count) : 0
+  count         = var.single_nat_gateway ? 1 : var.az_count
   allocation_id = element(aws_eip.nat.*.id, count.index)
   subnet_id     = element(aws_subnet.public.*.id, count.index)
   tags = merge(var.tags, {
@@ -104,12 +105,10 @@ resource "aws_route_table" "private-route-table" {
   count  = var.az_count
   vpc_id = aws_vpc.main.id
 
-  dynamic "route" {
-    for_each = var.enable_nat_gateway ? [1] : []
-    content {
-      cidr_block     = "0.0.0.0/0"
-      nat_gateway_id = element(aws_nat_gateway.nat.*.id, var.single_nat_gateway ? 0 : count.index)
-    }
+  # Route all internet-bound traffic (including to Cognito) through the NAT gateway
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = element(aws_nat_gateway.nat.*.id, var.single_nat_gateway ? 0 : count.index)
   }
 
   tags = merge(var.tags, {
@@ -137,3 +136,12 @@ resource "aws_vpc_endpoint" "dynamodb" {
     Name = "${var.aws_project}-DynamoDBEndpoint"
   })
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# NOTE: INTERNET ACCESS FOR PRIVATE SUBNETS VIA NAT GATEWAY
+# ---------------------------------------------------------------------------------------------------------------------
+# Private subnets have internet access through NAT gateways, which are now always provisioned.
+# This ensures that resources in private subnets can access public AWS services like Cognito,
+# which does not support Gateway VPC endpoints like DynamoDB.
+# The NAT gateway allows private resources to make outbound connections to the internet and public AWS services.
+# ---------------------------------------------------------------------------------------------------------------------

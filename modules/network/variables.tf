@@ -34,7 +34,7 @@ variable "enable_dns_hostnames" {
 
 variable "enable_nat_gateway" {
   type        = bool
-  description = "Should be true if you want to provision NAT Gateways for your private networks"
+  description = "DEPRECATED: NAT Gateways are now always provisioned for private networks to ensure internet access"
   default     = true
 }
 
