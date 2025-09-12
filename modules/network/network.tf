@@ -68,11 +68,11 @@ resource "aws_route_table" "public-route-table" {
   })
 }
 
-resource "aws_route_table_association" "public-route-association" {
-  count          = var.az_count
-  subnet_id      = element(aws_subnet.public.*.id, count.index)
-  route_table_id = aws_route_table.public-route-table.id
-}
+# resource "aws_route_table_association" "public-route-association" {
+#   count          = var.az_count
+#   subnet_id      = element(aws_subnet.public.*.id, count.index)
+#   route_table_id = aws_route_table.public-route-table.id
+# }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # NAT GATEWAY FOR PRIVATE SUBNET INTERNET ACCESS
