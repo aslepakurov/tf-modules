@@ -37,11 +37,6 @@ output "vpc_cidr_block" {
   value       = aws_vpc.main.cidr_block
 }
 
-output "cognito_vpc_endpoint_id" {
-  description = "The ID of the Cognito VPC endpoint"
-  value       = aws_vpc_endpoint.cognito.id
-}
-
 output "dynamodb_vpc_endpoint_id" {
   description = "The ID of the DynamoDB VPC endpoint"
   value       = aws_vpc_endpoint.dynamodb.id
