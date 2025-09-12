@@ -72,11 +72,6 @@ resource "aws_route_table_association" "public-route-association" {
   count          = var.az_count
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = aws_route_table.public-route-table.id
-  depends_on     = [aws_route_table.public-route-table, aws_subnet.public]
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -126,11 +121,6 @@ resource "aws_route_table_association" "private-route-association" {
   count          = var.az_count
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = element(aws_route_table.private-route-table.*.id, count.index)
-  depends_on     = [aws_route_table.private-route-table, aws_subnet.private]
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -141,52 +131,9 @@ resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id            = aws_vpc.main.id
   service_name      = "com.amazonaws.${var.aws_region}.dynamodb"
   vpc_endpoint_type = "Gateway"
-  # Don't specify route_table_ids here to avoid conflicts with existing route table associations
-  # Will use aws_vpc_endpoint_route_table_association resources instead
+  route_table_ids   = aws_route_table.private-route-table[*].id
 
   tags = merge(var.tags, {
     Name = "${var.aws_project}-DynamoDBEndpoint"
-  })
-}
-
-# Create explicit VPC endpoint route table associations to avoid conflicts
-resource "aws_vpc_endpoint_route_table_association" "dynamodb_endpoint_route_table" {
-  count           = var.az_count
-  vpc_endpoint_id = aws_vpc_endpoint.dynamodb.id
-  route_table_id  = aws_route_table.private-route-table[count.index].id
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# VPC ENDPOINT FOR COGNITO
-# ---------------------------------------------------------------------------------------------------------------------
-# Note: Interface type VPC endpoints require security groups (unlike Gateway endpoints)
-
-resource "aws_vpc_endpoint" "cognito" {
-  vpc_id             = aws_vpc.main.id
-  service_name       = "com.amazonaws.${var.aws_region}.cognito-idp"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = aws_subnet.private[*].id
-  security_group_ids = [aws_security_group.cognito_endpoint.id]  # Required for Interface endpoints
-  private_dns_enabled = true
-
-  tags = merge(var.tags, {
-    Name = "${var.aws_project}-CognitoEndpoint"
-  })
-}
-
-resource "aws_security_group" "cognito_endpoint" {
-  name        = "${var.aws_project}-cognito-endpoint-sg"
-  description = "Security group for Cognito VPC endpoint"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-  }
-
-  tags = merge(var.tags, {
-    Name = "${var.aws_project}-CognitoEndpointSG"
   })
 }
