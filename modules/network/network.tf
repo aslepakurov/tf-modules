@@ -131,7 +131,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id            = aws_vpc.main.id
   service_name      = "com.amazonaws.${var.aws_region}.dynamodb"
   vpc_endpoint_type = "Gateway"
-  route_table_ids   = aws_route_table.private-route-table[*].id
+  route_table_ids   = aws_route_table.private-route-table[0].id
 
   tags = merge(var.tags, {
     Name = "${var.aws_project}-DynamoDBEndpoint"
@@ -141,10 +141,29 @@ resource "aws_vpc_endpoint" "dynamodb" {
 resource "aws_vpc_endpoint" "cognito" {
   vpc_id             = aws_vpc.main.id
   service_name       = "com.amazonaws.${var.aws_region}.cognito-idp"
-  vpc_endpoint_type  = "Gateway"
-  route_table_ids    = aws_route_table.private-route-table[*].id
+  vpc_endpoint_type  = "Interface"
+  route_table_ids    = aws_route_table.private-route-table[1].id
+  security_group_ids = [aws_security_group.cognito_endpoint.id]  # Required for Interface endpoints
+  private_dns_enabled = true
 
   tags = merge(var.tags, {
     Name = "${var.aws_project}-CognitoEndpoint"
+  })
+}
+
+resource "aws_security_group" "cognito_endpoint" {
+  name        = "${var.aws_project}-cognito-endpoint-sg"
+  description = "Security group for Cognito VPC endpoint"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-CognitoEndpointSG"
   })
 }
