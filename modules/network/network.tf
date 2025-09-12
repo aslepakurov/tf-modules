@@ -137,3 +137,14 @@ resource "aws_vpc_endpoint" "dynamodb" {
     Name = "${var.aws_project}-DynamoDBEndpoint"
   })
 }
+
+resource "aws_vpc_endpoint" "cognito" {
+  vpc_id             = aws_vpc.main.id
+  service_name       = "com.amazonaws.${var.aws_region}.cognito-idp"
+  vpc_endpoint_type  = "Gateway"
+  route_table_ids    = aws_route_table.private-route-table[*].id
+
+  tags = merge(var.tags, {
+    Name = "${var.aws_project}-CognitoEndpoint"
+  })
+}
