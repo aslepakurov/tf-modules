@@ -87,6 +87,6 @@ variable "subnet_ids" {
 variable "db_connection_url" {
   type        = string
   description = "Database connection URL"
-  default     = null
+  default     = ""
   sensitive   = true
 }

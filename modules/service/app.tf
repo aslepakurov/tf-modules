@@ -20,8 +20,7 @@ resource "aws_apprunner_service" "service" {
       image_repository_type = "ECR"
       image_configuration {
         port                          = var.service_port
-        runtime_environment_variables = var.db_connection_url != null ?
-          merge(var.env, { DATABASE_URL = var.db_connection_url }) : var.env
+        runtime_environment_variables = merge(var.env, { DATABASE_URL = var.db_connection_url })
         runtime_environment_secrets   = var.secret_env
       }
     }
