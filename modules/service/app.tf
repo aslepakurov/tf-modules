@@ -31,11 +31,10 @@ resource "aws_apprunner_service" "service" {
 
   # VPC configuration if VPC ID and subnet IDs are provided
   dynamic "network_configuration" {
-    for_each = var.vpc_id != null && var.subnet_ids != null ? [1] : []
     content {
       egress_configuration {
         egress_type       = "VPC"
-        vpc_connector_arn = aws_apprunner_vpc_connector.connector[0].arn
+        vpc_connector_arn = aws_apprunner_vpc_connector.connector.arn
       }
       ingress_configuration {
         is_publicly_accessible = true
@@ -50,7 +49,7 @@ resource "aws_apprunner_service" "service" {
 resource "aws_apprunner_vpc_connector" "connector" {
   vpc_connector_name = "${var.service_name}-vpc-connector"
   subnets            = var.subnet_ids
-  security_groups    = [aws_security_group.app[0].id]
+  security_groups    = [aws_security_group.app.id]
 
   tags = var.tags
 }
@@ -86,5 +85,5 @@ output "apprunner_service_url" {
 
 output "app_security_group_id" {
   description = "The ID of the security group associated with the app"
-  value       = var.vpc_id != null ? aws_security_group.app[0].id : null
+  value       = aws_security_group.app.id
 }
