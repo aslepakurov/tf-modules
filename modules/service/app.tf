@@ -48,8 +48,6 @@ resource "aws_apprunner_service" "service" {
 
 # Create VPC connector if VPC ID and subnet IDs are provided
 resource "aws_apprunner_vpc_connector" "connector" {
-  count = var.vpc_id != null && var.subnet_ids != null ? 1 : 0
-
   vpc_connector_name = "${var.service_name}-vpc-connector"
   subnets            = var.subnet_ids
   security_groups    = [aws_security_group.app[0].id]
@@ -59,7 +57,6 @@ resource "aws_apprunner_vpc_connector" "connector" {
 
 # Create security group for the app if VPC ID is provided
 resource "aws_security_group" "app" {
-  count = var.vpc_id != null ? 1 : 0
 
   name        = "${var.service_name}-sg"
   description = "Security group for ${var.service_name} AppRunner service"
