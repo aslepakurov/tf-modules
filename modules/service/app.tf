@@ -9,7 +9,7 @@ resource "aws_apprunner_auto_scaling_configuration_version" "service_auto_scalin
 }
 
 resource "aws_apprunner_service" "service" {
-  service_name = var.service_name
+  service_name                   = var.service_name
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.service_auto_scaling.arn
   source_configuration {
     authentication_configuration {
@@ -20,7 +20,8 @@ resource "aws_apprunner_service" "service" {
       image_repository_type = "ECR"
       image_configuration {
         port                          = var.service_port
-        runtime_environment_variables = var.db_connection_url != null ? merge(var.env, { DATABASE_URL = var.db_connection_url }) : var.env
+        runtime_environment_variables = var.db_connection_url != null ?
+          merge(var.env, { DATABASE_URL = var.db_connection_url }) : var.env
         runtime_environment_secrets   = var.secret_env
       }
     }
@@ -30,15 +31,13 @@ resource "aws_apprunner_service" "service" {
   }
 
   # VPC configuration if VPC ID and subnet IDs are provided
-  dynamic "network_configuration" {
-    content {
-      egress_configuration {
-        egress_type       = "VPC"
-        vpc_connector_arn = aws_apprunner_vpc_connector.connector.arn
-      }
-      ingress_configuration {
-        is_publicly_accessible = true
-      }
+  network_configuration {
+    egress_configuration {
+      egress_type       = "VPC"
+      vpc_connector_arn = aws_apprunner_vpc_connector.connector.arn
+    }
+    ingress_configuration {
+      is_publicly_accessible = true
     }
   }
 
@@ -49,7 +48,7 @@ resource "aws_apprunner_service" "service" {
 resource "aws_apprunner_vpc_connector" "connector" {
   vpc_connector_name = "${var.service_name}-vpc-connector"
   subnets            = var.subnet_ids
-  security_groups    = [aws_security_group.app.id]
+  security_groups = [aws_security_group.app.id]
 
   tags = var.tags
 }
@@ -63,9 +62,9 @@ resource "aws_security_group" "app" {
 
   # Allow all outbound traffic
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
